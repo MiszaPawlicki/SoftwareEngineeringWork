@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<meta charset="UTF-8">
+<title>UEA Study Planner</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="planner_style.css">
+<style>
+</style>
+
+<body>
+    <!-- scroll to top button -->
+    <button id="scrollBtn" title="Back to top" onclick="topFunction()">↑<br>Back to Top</button>
+
+    <header>
+        <!-- header contains both nav bar and logo  -->
+        <div class="top-bar">
+            <img id="uea" src="https://i.imgur.com/G8W14Io.png">
+            <h1>Student Study Planner</h1>
+            <img id="logo" src="https://i.imgur.com/Bfrya3f.png​">
+        </div>
+
+        </div>
+
+        <div class="navigation-bar">
+            <div id="navigation-container">
+                <ul>
+                    <li><a href="/">Home</a></li>
+                    <li><a href="calendar">Calendar</a></li>
+                    <li><a id="modulesButton">Modules</a></li>
+                    <li><a href="about">About</a></li>
+                    <li><a href="help">Help</a></li>
+
+                    <li>
+                        <form action="/logout?_method=DELETE" method="POST">
+                            <button class="logoutBtn" type="submit">Log Out</button>
+                        </form>
+                    </li>
+                    <li>
+                        <button id="colorBtn" class="darkMode" onclick="colourFunction()">Toggle Colour</button>
+                    </li>
+
+                    <div id="social">
+                        <div id="fb">
+                            <a href="https://facebook.com/ueaofficial/">
+                                <img id="socialImage" src="/facebook.png">
+                            </a>
+                        </div>
+                        <div id="ig">
+                            <a href="https://instagram.com/uniofeastanglia">
+                                <img id="socialImage" src="/instagram.png">
+                            </a>
+                        </div>
+                        <div id="tt">
+                            <a href="https://twitter.com/uniofeastanglia">
+                                <img id="socialImage" href="twitter" src="/twitter.png">
+                            </a>
+                        </div>
+                    </div>
+                </ul>
+            </div>
+        </div>
+
+    </header>
+
+    <div class="content-container">
+        <div class="dashboard-container" id="upcoming-deadlines">
+            <h1><u>Study Dashboard</u></h1>
+        </div>
+        <!-- to be hidden when no missed deadlines are active -->
+        <div id="missed-deadlines" class="dashboard-container">
+            <br>
+            <b>Missed deadlines:</b> <br>
+            These deadlines are beyond their hand-in date.
+            Please get in contact with your tutor about solving this issue.<br><br>
+
+            <% for(var i=0; i < past_deadlines.length; i++) { %>
+                <tr>
+                    <td>
+                        <%= past_deadlines[i].name %>
+                    </td>
+                    <td>
+                        <%= past_deadlines[i].end %>
+                    </td>
+                </tr><br>
+                <% } %>
+        </div>
+        <div>
+            <button id="newExtensionButton">Apply For Extension</button>
+        </div>
+
+        <div id="upcoming-deadlines" class="dashboard-container">
+            <h2>Upcoming deadlines</h2>
+            <% for(var i=0; i < upcoming_deadlines.length; i++) { %>
+                <tr>
+                    <td>
+                        <%= upcoming_deadlines[i].name %>
+                    </td>
+                    <td>
+                        <%= upcoming_deadlines[i].end %>
+                    </td>
+                </tr><br>
+                <% } %>  
+
+        </div>
+        
+
+        <div id="upcoming-activities" class="dashboard-container">
+            <h2>Activities left to do</h2>
+            <button id="newActivityButton">Add activity</button>
+            <div id="newActivity">
+                <form action="/activities" method="POST" id="createActivity">
+                    <label for="createActivity">Activity name</label><br>
+                    <input type="text" id="activityName" name="activityName"><br><br>
+
+                    <label for="createActivity">Module</label><br>
+                    <select id="activityParent" name="activityParent">
+                        <option selected disabled>Select...</option>
+                        <label for="createActivity">Module</label><br>
+                        <% try { %>
+                            <% for(var i=0; i < modules.length; i++) { %>
+                                <option value="<%= modules[i].name %>">
+                                    <%= modules[i].name %>
+                                </option>
+                                <% } %>
+                                    <% } catch (error) { %>
+                                        <%console.log(error); %>
+                                            <% }%>
+
+                    </select><br><br>
+
+                    <label for="createActivity">Time (minutes):</label><br>
+                    <input type="number" id="activityTime" name="activityTime"><br>
+                    <button id="submitButtonActivity" type="submit" form="createActivity">Submit</button>
+                </form>
+                <button id="closeButtonActivity" type="cancel">Close</button>
+            </div>
+        </div>
+
+        <% for(var i=0; i < activities.length; i++) { %>
+            <h3>
+                <%=activities[i].name%> - <%=activities[i].parent%>
+            </h3>
+            <div class="prog-bar-background">
+                <div id="prog-bar-green<%=i%>" class="prog-green">
+                    <%=Math.round((total_times[i] /activities[i].time)*100)%>%
+                </div>
+
+                <script>
+                    document.getElementById('prog-bar-green<%=i%>').style.setProperty('width', '<%=Math.round((total_times[i]/activities[i].time)*100)%>%')
+                    document.getElementById('prog-bar-green<%=i%>').style.setProperty('background-color', 'green')
+
+                </script>
+
+                <% if(Math.round((total_times[i]/activities[i].time)*100)>100) { %>
+
+                    <script>
+                        document.getElementById('prog-bar-green<%=i%>').style.setProperty('width', '100%')
+                        document.getElementById('prog-bar-green<%=i%>').style.setProperty('background-color', 'green')
+
+                    </script>
+                    <% } %>
+            </div><br><br>
+            <% } %>
+
+                <div>
+                    <button id="newMilestone">Add progress</button>
+                </div>
+
+              
+
+                <div id="ganttTasks">
+                    <form action="/ganttTasks" method="POST" id="createTask">
+                        <label for="name">Task name</label><br>
+                        <input type="text" id="taskName" name="taskName"><br><br>
+
+                        <label for="StartDays">Start day:</label><br>
+                        <input type="text" id="taskTimeStart" name="taskTimeStart"><br>
+                        <br>
+
+                        <label for="EndDays">End day:</label><br>
+                        <input type="text" id="taskTimeEnd" name="taskTimeEnd"><br>
+                        <br>
+                    </form>
+                    <button type="submit" form="createTask">Submit</button>
+                    <button id="closeTaskButton" type="cancel">Close</button>
+
+                </div>
+                <button id="newGanttTask">New gannt task</button>
+                <div id="gantt-chart" class="dashboard-container">
+                    <h2>Gantt Chart</h2>
+                    <div class="chart-wrapper">
+                        <ul class="chart-values">
+                            <li>sun</li>
+                            <li>mon</li>
+                            <li>tue</li>
+                            <li>wed</li>
+                            <li>thu</li>
+                            <li>fri</li>
+                            <li>sat</li>
+                        </ul>
+                        <ul id="chart-bars">
+                        </ul>
+                    </div>
+                </div>
+                <div id="milestones">
+                    <form action="/milestones" method="POST" id="createMilestone">
+                        <label for="name">Milestone name</label><br>
+                        <input type="text" id="milestoneName" name="milestoneName"><br><br>
+
+                        <label for="activity">Activity</label><br>
+                        <select id="milestoneParent" name="milestoneParent">
+                            <option selected disabled>Select...</option>
+                            <% for(var i=0; i < activities.length; i++) { %>
+                                <option value="<%= activities[i].parent %> - <%= activities[i].name %>">
+                                    <%= activities[i].parent %> - <%= activities[i].name %>
+                                </option>
+                                <% } %>
+                        </select><br><br>
+
+                        <label for="time">Time (minutes):</label><br>
+                        <input type="number" id="milestoneTime" name="milestoneTime"><br>
+                        <br>
+                        <label for="name">Additional notes:</label><br>
+                        <input type="text" id="additionalNotes" name="additionalNotes"><br>
+                    </form>
+                    <button type="submit" form="createMilestone">Submit</button>
+                    <button id="closeButton" type="cancel">Close</button>
+
+                </div>
+                <div id="newExtension">
+                    <form  id="createExtension">
+                        
+        
+                        <label for="createActivity">Coursework</label><br>
+                        <select id="activityParent" name="activityParent">
+                            <option selected disabled>Select...</option>
+                            <label for="createActivity">Module</label><br>
+                            <% try { %>
+                                <% for(var i=0; i < modules.length; i++) { %>   
+                                        <option value="<%= modules[i].coursework.name %>"><%= modules[i].coursework[0].name %></option>
+                                        <option value="<%= modules[i].coursework.name %>"><%= modules[i].coursework[1].name %></option>
+                                        <option value="<%= modules[i].coursework.name %>"><%= modules[i].coursework[2].name %></option>
+                               <% } %>
+                             <% } catch (error) { %>
+                                <%console.log(error); %>
+                            <% }%>
+                            
+                        </select><br><br>
+        
+                        <label for="createExtension">Time (days):</label><br>
+                        <input type="number" id="extensionTime" name="extensionTime" max="3" min="1"><br>
+                        <button id="submitButtonExtension" type="submit" form="createExtensiom">Submit</button>
+                    </form>
+                    <button id="closeButtonExtension" type = "cancel">Close</button>
+                </div>
+
+                <div id="redirect">
+                    <P>You have not uploaded a file yet, would you like to open the file upload page?</P>
+                    <button id="redirectButton" onclick="window.location='fileupload';">Yes</button>
+                    <button id="redirectCloseButton" type="cancel">No</button>
+                </div>
+    </div>
+
+    </div>
+    <div id="redirect" class="redirect">
+        <P>You have not uploaded a file yet, would you like to open the file upload page?</P>
+        <button id="redirectButton" onclick="window.location='fileupload';">Yes</button><br>
+        <button id="redirectCloseButton" type="cancel">No</button>
+    </div>
+
+    <script src="index.js"></script>
+    <script src="scripts.js"></script>
+
+    <footer>
+        <p>Norwich Research Park, Norwich NR4 7TJ, Norwich, England – ©University of East Anglia. All rights reserved​
+        </p>
+    </footer>
+</body>
+
+</html>
